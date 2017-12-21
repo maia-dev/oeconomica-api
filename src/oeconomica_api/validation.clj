@@ -8,5 +8,3 @@
            (string? (:password userData)))
     {:name (:name userData) :password (:password userData)}
     nil))
-
-
