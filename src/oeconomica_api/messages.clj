@@ -7,4 +7,5 @@
                :bad-data {:status 400 :body "Invalid data"}
                :bad-request {:status 400 :body "Bad request"}
                :invalid-name-password {:status 401
-                                       :body "Invalid name or password"}})
+                                       :body "Invalid name or password"}
+               :invalid-token {:status 403 :body "Invalid token"}})

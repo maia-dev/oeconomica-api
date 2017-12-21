@@ -28,8 +28,7 @@
 
 (defn- pubkey [auth-conf]
   (ks/public-key
-   (io/resource (:pubkey auth-conf))
-   (:passphrase auth-conf)))
+   (io/resource (:pubkey auth-conf))))
 
 (defn create-auth-token [ds auth-conf credentials]
   (let [[ok? res] (auth-user ds credentials)
@@ -37,3 +36,11 @@
     (if ok?
       [true {:token (jwt/sign res (pkey auth-conf) {:alg :rs256 :exp exp})}]
       [false res])))
+
+(defn is-token-valid [token auth-conf]
+  (try
+    (:name (:user (jwt/unsign token
+                              (pubkey {:pubkey "auth_pubkey.pem"})
+                              {:alg :rs256})))
+    (catch Exception e
+      nil)))
