@@ -5,51 +5,42 @@
             [ring.middleware.json :as middleware]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [oeconomica-api.auth :as auth]
-            [oeconomica-api.config :as config]
-            [oeconomica-api.store :as store]
             [oeconomica-api.validation :as validate]
             [oeconomica-api.messages :refer [messages]]))
 
 ;;----------------Open-Routes
-;;NOTE: see multimethods to implement messages
+(defn home [req] "Welcome to Oeconomica API!")
+
 (defn login [req]
-  (let [[ok? res] (auth/create-auth-token (:ds req)
-                                          (:auth-conf req)
-                                          (:body req))]
-    (if ok?
-      {:status 201 :body res}
-      {:status 401 :body res})))
+  (let [res (auth/create-auth-token (:body req))]
+    (or (messages res)
+        {:status 201 :body res})))
 
 ;;------------------Closed-Routes
 (defn signup! [req]
   (messages
-   (auth/register-user! (:ds req)
-                        (validate/sanitize-new-user-data (:body req)))))
+   (auth/register-user! (validate/sanitize-new-user-data (:body req)))))
 
-(defn home-controler [req] "Welcome to Oeconomica API!")
+
+(defn new-purchase [req]
+  (println (validate/sanitize-new-purchase (:body req))))
 
 ;;-----------------Middlewares
-(defn wrap-config [handler]
-  (fn [req]
-    (handler (assoc req :auth-conf config/auth))))
-
-(defn wrap-datastore [handler]
-  (fn [req]
-    (handler (assoc req :ds config/datastore))))
-
 (defn wrap-auth [handler]
   (fn [req]
-    (let [user (auth/is-token-valid (:token (:body req)) config/auth)]
+    (let [user (auth/is-token-valid (:token (:body req)))]
       (if (nil? user)
         (messages :invalid-token)
-        (handler (assoc req :identity user))))))
+        (handler (assoc (update-in req [:body] dissoc :token) :identity user))))))
 
 ;;-----------------Interface
 (defroutes closed-routes
-  (GET "/" [] home-controler)
-  (POST "/signup" [] signup!))
+  (POST "/signup" [] signup!)
+  (POST "/new-purchase" [] new-purchase)
+  (POST "/new-payment" [] "PAYMENT"))
 
 (defroutes app-routes
+  (GET "/" [] home)
   (POST "/login" [] login)
   (wrap-routes closed-routes wrap-auth)
   (route/resources "/resources")
@@ -57,7 +48,5 @@
 
 (def app
   (-> (wrap-defaults app-routes api-defaults)
-      (wrap-datastore)
-      (wrap-config)
       (middleware/wrap-json-body {:keywords? true})
       middleware/wrap-json-response))

@@ -5,9 +5,9 @@
 (deftest sanitize-new-user-data-test
   (testing "Sanitize new user data"
     (let [userdata {:name "test" :password "test1234"}]
-      (is (= userdata
+      (is (= (assoc userdata :balance 0)
              (sut/sanitize-new-user-data userdata)))
-      (is (= userdata
+      (is (= (assoc userdata :balance 0)
              (sut/sanitize-new-user-data (assoc userdata :invalid-key "k"))))
       (is (nil?
              (sut/sanitize-new-user-data (dissoc userdata :name))))
@@ -18,4 +18,12 @@
       (is (nil?
              (sut/sanitize-new-user-data {:name 123 :password 1234}))))))
 
-(run-tests)
+(deftest sanitize-new-purchase-test
+  (testing "Sanitize new purchase"
+    (let [purchase-data {:spender "t"
+                         :value 123
+                         :receivers ["a" "b"]
+                         :category "test"}]
+      (is (= (assoc purchase-data :description nil :validated [false false])
+             (sut/sanitize-new-purchase purchase-data))))))
+

@@ -4,43 +4,51 @@
             [buddy.core.keys :as ks]
             [clj-time.core :as t]
             [clojure.java.io :as io]
+            [environ.core :refer [env]]
             [oeconomica-api.store :as store]))
 
+(def auth-conf {:privkey (env :privkey)
+                :pubkey (env :pubkey)
+                :passphrase (env :key-passphrase)})
 
-(defn register-user! [ds user]
-  (if-not (or (nil? user) (nil? ds))
-    (store/add-user! ds (update-in user [:password] #(hs/encrypt %)))
-    :bad-data))
-
-(defn auth-user [ds credentials]
-  (let [user (store/find-user ds (:name credentials))
-        unauthed [false "Invalid username or password"]]
-    (if user
-      (if (hs/check (:password credentials) (:password user))
-        [true {:user (dissoc user :password :_id)}]
-        unauthed)
-      unauthed)))
-
-(defn- pkey [auth-conf]
+(defn- privkey []
+  "Returns private key if found, else nil"
   (ks/private-key
    (io/resource (:privkey auth-conf))
    (:passphrase auth-conf)))
 
-(defn- pubkey [auth-conf]
+(defn- pubkey []
+  "Returns public key if found, else nill"
   (ks/public-key
    (io/resource (:pubkey auth-conf))))
 
-(defn create-auth-token [ds auth-conf credentials]
-  (let [[ok? res] (auth-user ds credentials)
-        exp (-> (t/plus (t/now) (t/days 1)))]
-    (if ok?
-      [true {:token (jwt/sign res (pkey auth-conf) {:alg :rs256 :exp exp})}]
-      [false res])))
+(defn register-user! [user-data]
+  "Calls store/add-user! with the user data and the hashed password
+     if the user data is valid, else returns :bad-data"
+  (if-not (nil? user-data)
+    (store/add-user! (update-in user-data [:password] #(hs/encrypt %)))
+    :bad-data))
 
-(defn is-token-valid [token auth-conf]
+(defn auth-user [credentials]
+  "Returns a {:user {userdata} if user exists and password
+     is correct, else returns :Invalid-name-password"
+  (let [user (store/find-user (:name credentials))
+        unauthed :invalid-name-password]
+    (if user
+      (if (hs/check (:password credentials) (:password user))
+        {:user (dissoc user :password :_id)}
+        unauthed)
+      unauthed)))
+
+(defn create-auth-token [credentials]
+  (let [res (auth-user credentials)
+        exp (-> (t/plus (t/now) (t/days 1)))]
+    (if (res :user)
+      {:token (jwt/sign res (privkey) {:alg :rs256 :exp exp})}
+      res)))
+
+(defn is-token-valid [token]
   (try
-    (:name (:user (jwt/unsign token
-                              (pubkey {:pubkey "auth_pubkey.pem"})
-                              {:alg :rs256})))
+    (:name (:user (jwt/unsign token (pubkey) {:alg :rs256})))
     (catch Exception e
       nil)))

@@ -2,9 +2,9 @@
 /lib
 /classes
 /checkouts
-/src/oeconomica_api/config.clj
 pom.xml
 pom.xml.asc
+profiles.clj
 *.pem
 *.jar
 *.class
