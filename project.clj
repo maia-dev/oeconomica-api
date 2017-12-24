@@ -6,6 +6,7 @@
                  [compojure "1.5.1"]
                  [environ "1.1.0"]
                  [com.novemberain/monger "3.1.0"]
+                 [org.slf4j/slf4j-nop "1.7.12"]
                  [buddy/buddy-auth "2.1.0"]
                  [buddy/buddy-hashers "1.3.0"]
                  [cheshire "5.8.0"]

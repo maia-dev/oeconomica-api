@@ -21,7 +21,6 @@
   (messages
    (auth/register-user! (validate/sanitize-new-user-data (:body req)))))
 
-
 (defn new-purchase [req]
   (println (validate/sanitize-new-purchase (:body req))))
 

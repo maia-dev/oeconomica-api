@@ -5,7 +5,7 @@
             [clj-time.core :as t]
             [clojure.java.io :as io]
             [environ.core :refer [env]]
-            [oeconomica-api.store :as store]))
+            [oeconomica-api.store.users :as user-store]))
 
 (def auth-conf {:privkey (env :privkey)
                 :pubkey (env :pubkey)
@@ -23,16 +23,16 @@
    (io/resource (:pubkey auth-conf))))
 
 (defn register-user! [user-data]
-  "Calls store/add-user! with the user data and the hashed password
+  "Calls user-store/add-user! with the user data and the hashed password
      if the user data is valid, else returns :bad-data"
   (if-not (nil? user-data)
-    (store/add-user! (update-in user-data [:password] #(hs/encrypt %)))
+    (user-store/add-user! (update-in user-data [:password] #(hs/encrypt %)))
     :bad-data))
 
 (defn auth-user [credentials]
   "Returns a {:user {userdata} if user exists and password
      is correct, else returns :Invalid-name-password"
-  (let [user (store/find-user (:name credentials))
+  (let [user (user-store/find-user (:name credentials))
         unauthed :invalid-name-password]
     (if user
       (if (hs/check (:password credentials) (:password user))

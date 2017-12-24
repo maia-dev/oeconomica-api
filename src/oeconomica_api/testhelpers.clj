@@ -12,25 +12,23 @@
 (def ds-data {:host (env :ds-host)
               :port (Integer. (env :ds-port))
               :db (env :ds-db)})
-
-
 (def test-user {:name "test user"
                 :balance 0
                 :password (hs/encrypt "1234")})
-
 (def conn
   (mg/connect {:host (:host ds-data)
                :port (:port ds-data)}))
 (def test-db
   (mg/get-db conn (:db ds-data)))
 
+;;---- USERS RELATED
 (defn create-test-user []
   (mc/insert test-db "users" test-user))
 
 (defn clear-users []
   (mc/remove test-db "users"))
 
-
+;;---- TOKEN RELATED
 (def key-data {:privkey (env :privkey)
                :pubkey (env :pubkey)
                :passphrase (env :key-passphrase)})
