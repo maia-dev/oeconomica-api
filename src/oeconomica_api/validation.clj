@@ -21,6 +21,7 @@
       :bad-data))
 
 
+;this is leting a purchase to oneself pass, needs more validations
 (defn sanitize-new-purchase [purchase-data]
   (if (and (h/contains-many? purchase-data
                              :spender :value :receivers :category)
@@ -29,9 +30,7 @@
            (number? (:value purchase-data))
            (and (boolean (vector? (:receivers purchase-data)))
                 (boolean (not-empty (:receivers purchase-data)))
-                (not-any? nil? (map string? (:receivers purchase-data)))
-                (not (boolean (some #{:spender purchase-data}
-                               '(:receivers purchase-data)))))
+                (not-any? nil? (map string? (:receivers purchase-data))))
            (or (string? (:description purchase-data))
                (nil? (:description purchase-data))))
     (if (not-any? nil? (map user-store/find-user (:receivers purchase-data)))
@@ -49,5 +48,5 @@
 
 (sanitize-new-purchase {:spender "test1"
                         :value 0
-                        :receivers ["test1"]
+                        :receivers ["test2"]
                         :category "casa"})
