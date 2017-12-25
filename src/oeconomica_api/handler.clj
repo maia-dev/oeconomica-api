@@ -5,9 +5,11 @@
             [ring.middleware.json :as middleware]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [oeconomica-api.auth :as auth]
-            [oeconomica-api.validation :as validate]
+            [oeconomica-api.validation :as refiner]
+            [oeconomica-api.store.transactions :as transaction-store]
             [oeconomica-api.messages :refer [messages]]))
 
+;TODO: validate db insertions
 ;;----------------Open-Routes
 (defn home [req] "Welcome to Oeconomica API!")
 
@@ -18,11 +20,18 @@
 
 ;;------------------Closed-Routes
 (defn signup! [req]
-  (messages
-   (auth/register-user! (validate/sanitize-new-user-data (:body req)))))
+  (let [user-data (refiner/sanitize-new-user (:body req))]
+    (if (keyword? user-data)
+      (messages user-data)
+      (messages (auth/register-user! user-data)))))
 
 (defn new-purchase [req]
-  (println (validate/sanitize-new-purchase (:body req))))
+  (let [purchase-data (refiner/sanitize-new-purchase
+                       (assoc (:body req)
+                              :spender (:identity req)))]
+    (if (keyword? purchase-data)
+      (messages purchase-data)
+      (messages (transaction-store/register-new-purchase! purchase-data)))))
 
 ;;-----------------Middlewares
 (defn wrap-auth [handler]
@@ -30,7 +39,8 @@
     (let [user (auth/is-token-valid (:token (:body req)))]
       (if (nil? user)
         (messages :invalid-token)
-        (handler (assoc (update-in req [:body] dissoc :token) :identity user))))))
+        (handler (assoc (update-in req [:body]
+                                   dissoc :token) :identity user))))))
 
 ;;-----------------Interface
 (defroutes closed-routes

@@ -9,21 +9,19 @@
 
 (let [conn (mg/connect {:host (:ds-host env)
                         :port (Integer. (:ds-port env))})
-      db (mg/connect (:db (:ds-db env)))]
+      db (mg/get-db conn (:ds-db env))]
 
-  (defn purge-collections
-    [f]
-    (mc/remove db "users")
-    (f)
-    (mc/remove db "users"))
-  (use-fixtures :each purge-collections)
+  (use-fixtures :each
+    (fn [f]
+      (mc/remove db "users")
+      (f)
+      (mc/remove db "users")))
 
   (deftest add-user-test
     (testing "Adding user to users db"
       (let [coll "users"
             doc {:name "Test"}]
         (is (= :user-created (sut/add-user! doc)))
-        (is (= :user-exists (sut/add-user! doc)))
         (is (= 1 (mc/count db coll))))))
 
   (deftest find-user

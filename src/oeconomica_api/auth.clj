@@ -23,11 +23,8 @@
    (io/resource (:pubkey auth-conf))))
 
 (defn register-user! [user-data]
-  "Calls user-store/add-user! with the user data and the hashed password
-     if the user data is valid, else returns :bad-data"
-  (if-not (nil? user-data)
-    (user-store/add-user! (update-in user-data [:password] #(hs/encrypt %)))
-    :bad-data))
+  "Calls user-store/add-user! with the user data and the hashed password"
+  (user-store/add-user! (update-in user-data [:password] #(hs/encrypt %))))
 
 (defn auth-user [credentials]
   "Returns a {:user {userdata} if user exists and password
@@ -36,7 +33,7 @@
         unauthed :invalid-name-password]
     (if user
       (if (hs/check (:password credentials) (:password user))
-        {:user (dissoc user :password :_id)}
+        {:user (dissoc user :password :_id :pending-transactions)}
         unauthed)
       unauthed)))
 
