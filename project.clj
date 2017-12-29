@@ -1,5 +1,5 @@
 (defproject oeconomica-api "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "Backend API for oeconomica"
   :url "http://example.com/FIXME"
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
@@ -10,6 +10,7 @@
                  [buddy/buddy-auth "2.1.0"]
                  [buddy/buddy-hashers "1.3.0"]
                  [cheshire "5.8.0"]
+                 [ring-cors "0.1.11"]
                  [ring/ring-mock "0.3.0"]
                  [ring/ring-json "0.4.0"]
                  [ring/ring-defaults "0.2.1"]

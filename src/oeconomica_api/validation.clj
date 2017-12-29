@@ -21,7 +21,7 @@
       :bad-data))
 
 
-;this is leting a purchase to oneself pass, needs more validations
+;TODO:this is leting a purchase to oneself pass, needs more validations
 (defn sanitize-new-purchase [purchase-data]
   (if (and (h/contains-many? purchase-data
                              :spender :value :receivers :category)
@@ -45,8 +45,3 @@
        }
       :bad-receivers)
     :bad-data))
-
-(sanitize-new-purchase {:spender "test1"
-                        :value 0
-                        :receivers ["test2"]
-                        :category "casa"})

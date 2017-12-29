@@ -9,7 +9,8 @@
   (let [purchase (assoc purchase-data :_id (ObjectId.))]
     (do
       (dorun (map user-store/insert-pending-validation!
-                  (:receivers purchase) (repeat (:_id purchase))))
+                  (:receivers purchase)
+                  (repeat (:_id purchase))))
       (user-store/insert-pending-transaction! (:spender purchase)
                                               (:_id purchase))
       (mc/insert db "pending" purchase)

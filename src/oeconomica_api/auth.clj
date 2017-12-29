@@ -33,7 +33,11 @@
         unauthed :invalid-name-password]
     (if user
       (if (hs/check (:password credentials) (:password user))
-        {:user (dissoc user :password :_id :pending-transactions)}
+        {:user (dissoc user
+                       :password
+                       :_id
+                       :pending-transactions
+                       :pending-validations)}
         unauthed)
       unauthed)))
 

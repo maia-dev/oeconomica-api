@@ -2,7 +2,8 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [ring.util.response :refer (response)]
-            [ring.middleware.json :as middleware]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
             [oeconomica-api.auth :as auth]
             [oeconomica-api.validation :as refiner]
@@ -57,5 +58,7 @@
 
 (def app
   (-> (wrap-defaults app-routes api-defaults)
-      (middleware/wrap-json-body {:keywords? true})
-      middleware/wrap-json-response))
+      (wrap-cors :access-control-allow-origin [#"http://127.0.0.1:3000"]
+                 :access-control-allow-methods [:get :post])
+      (wrap-json-body {:keywords? true})
+      wrap-json-response))
