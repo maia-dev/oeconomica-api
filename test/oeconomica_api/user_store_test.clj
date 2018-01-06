@@ -24,6 +24,15 @@
         (is (= :user-created (sut/add-user! doc)))
         (is (= 1 (mc/count db coll))))))
 
+  (deftest get-user-names-test
+    (testing "Get all user names from db"
+      (let [coll "users"]
+        (is (= 0 (count (sut/get-user-names))))
+        (mc/insert db coll {:name "t1"})
+        (is (= 1 (count (sut/get-user-names))))
+        (mc/insert db coll {:name "t2"})
+        (is (= 2 (count (sut/get-user-names)))))))
+
   (deftest find-user
     (testing "Find user in users db"
       (let [coll "users"

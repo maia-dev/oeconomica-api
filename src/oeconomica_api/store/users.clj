@@ -11,6 +11,17 @@
   [name]
   (mc/find-one-as-map db "users" {:name name}))
 
+(defn get-user-names
+  " Returns the name of all registered users in a list"
+  []
+  (map :name (mc/find-maps db "users")))
+
+(defn get-user-info-from-key
+  " Returns the values from a key from a given user name"
+  [key user]
+  (apply key (mc/find-maps db "users" {:name user})))
+
+
 (defn add-user!
   " Adds a new user to the db. returns :user-created"
   [user-data]
